@@ -15,6 +15,34 @@ const DISTRICT_CENTERS = {
   "三江侗族自治县": { lat: 25.78553, lng: 109.614846 }
 };
 
+const SHOP_SEARCH_ALIASES = {
+  "柳州螺蛳粉": "螺蛳粉",
+  "螺蛳鸭脚煲": "鸭脚煲",
+  "黄焖鸡米饭": "黄焖鸡",
+  "兰州牛肉面": "牛肉面",
+  "石锅拌饭": "拌饭",
+  "烤肉拌饭": "拌饭",
+  "蛋炒饭": "炒饭",
+  "番茄鸡蛋盖饭": "盖饭",
+  "猪肉饺子": "饺子",
+  "鲜肉云吞": "云吞",
+  "过桥米线": "米线",
+  "汉堡薯条": "汉堡",
+  "轻食沙拉": "轻食",
+  "柳城云片糕": "云片糕",
+  "融安滤粉": "滤粉",
+  "中渡柴火粉": "柴火粉",
+  "三江油茶": "油茶",
+  "侗家酸鱼": "酸鱼",
+  "侗族酸鱼": "酸鱼",
+  "苗家酸鱼": "酸鱼",
+  "侗家烧鱼": "烧鱼"
+};
+
+function getShopSearchKeyword(foodName) {
+  return SHOP_SEARCH_ALIASES[foodName] || foodName;
+}
+
 function mergeFoodPools(localFoods, commonFoods) {
   const seen = new Set();
 
@@ -191,7 +219,15 @@ function initializePage() {
     locateButton: document.getElementById("locate-button"),
     locateButtonText: document.querySelector("#locate-button span"),
     districtSelect: document.getElementById("district-select"),
-    mapLink: document.getElementById("map-link")
+    mapLink: document.getElementById("map-link"),
+    nearbyMapSection: document.getElementById("nearby-map-section"),
+    nearbyMapTitle: document.getElementById("nearby-map-title"),
+    nearbyMapMeta: document.getElementById("nearby-map-meta"),
+    nearbyMapFrame: document.getElementById("nearby-map-frame"),
+    nearbyMap: document.getElementById("nearby-map"),
+    mapLoading: document.getElementById("map-loading"),
+    fullMapLink: document.getElementById("full-map-link"),
+    backResultButton: document.getElementById("back-result-button")
   };
 
   let picker;
@@ -206,6 +242,7 @@ function initializePage() {
   let hasLiveLocation = false;
   let locationWatchId = null;
   let autoLocationAttempted = false;
+  let mapLoadTimer = null;
 
   function loadBoundaries() {
     if (boundariesPromise) {
@@ -231,6 +268,51 @@ function initializePage() {
     return boundariesPromise;
   }
 
+  function hideNearbyMap() {
+    elements.nearbyMapSection.hidden = true;
+    elements.nearbyMap.src = "about:blank";
+    elements.mapLoading.hidden = false;
+
+    if (mapLoadTimer) {
+      clearTimeout(mapLoadTimer);
+      mapLoadTimer = null;
+    }
+  }
+
+  function showNearbyMap(foodName, options = {}) {
+    const shouldScroll = options.scroll !== false;
+    const originLabel = hasLiveLocation ? "当前位置" : "选区中心";
+    const searchKeyword = getShopSearchKeyword(foodName);
+    const mapUrl = buildMapLink(searchKeyword, currentCoordinates.lat, currentCoordinates.lng, 3000);
+
+    elements.nearbyMapTitle.textContent = `附近卖「${foodName}」的店铺`;
+    elements.nearbyMapMeta.textContent = `${originLabel}3公里内 · 距离优先 · 搜索「${searchKeyword}」`;
+    elements.nearbyMapSection.dataset.searchKeyword = searchKeyword;
+    elements.fullMapLink.href = mapUrl;
+    elements.nearbyMap.title = `腾讯地图：${originLabel}3公里内售卖${foodName}的店铺`;
+    elements.nearbyMapSection.hidden = false;
+    elements.mapLoading.hidden = false;
+    elements.nearbyMap.src = mapUrl;
+
+    if (mapLoadTimer) {
+      clearTimeout(mapLoadTimer);
+    }
+    mapLoadTimer = setTimeout(() => {
+      elements.mapLoading.hidden = true;
+      mapLoadTimer = null;
+    }, 15000);
+
+    if (shouldScroll) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      requestAnimationFrame(() => {
+        elements.nearbyMapSection.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "start"
+        });
+      });
+    }
+  }
+
   function resetResult() {
     elements.foodResult.textContent = "还没想好？";
     elements.foodDescription.textContent = "点击下方按钮，让随机选择帮你做决定。";
@@ -238,10 +320,11 @@ function initializePage() {
     elements.resultTag.textContent = "等待抽取";
     elements.pickButtonText.textContent = "帮我决定";
     elements.resultShopLink.hidden = true;
-    elements.resultShopLink.href = "https://mapapi.qq.com/";
-    elements.resultShopText.textContent = "在地图寻找附近店铺";
+    elements.resultShopLink.href = "#nearby-map-section";
+    elements.resultShopText.textContent = "在下方查看附近店铺";
     elements.resultShopHint.textContent = "3公里内 · 距离优先";
     currentSelection = null;
+    hideNearbyMap();
     elements.interactionHint.textContent = `当前随机池共 ${currentPool.length} 种可选美食，不满意可以再抽一次。`;
     elements.shareStatus.textContent = "";
     pickCount = 0;
@@ -253,14 +336,16 @@ function initializePage() {
 
   function updateShopLink(foodName) {
     const originLabel = hasLiveLocation ? "当前位置" : "选区中心";
-    elements.resultShopLink.href = buildMapLink(foodName, currentCoordinates.lat, currentCoordinates.lng, 3000);
+    const searchKeyword = getShopSearchKeyword(foodName);
+    elements.resultShopLink.href = "#nearby-map-section";
     elements.resultShopLink.hidden = false;
-    elements.resultShopLink.setAttribute("aria-label", `在腾讯地图搜索${originLabel}3公里内售卖${foodName}的店铺，按距离优先，新窗口打开`);
-    elements.resultShopText.textContent = `在地图找卖「${foodName}」的店`;
+    elements.resultShopLink.setAttribute("aria-label", `跳转到页面下方，查看${originLabel}3公里内按「${searchKeyword}」搜索的附近店铺`);
+    elements.resultShopText.textContent = `查看附近卖「${foodName}」的店`;
     elements.resultShopHint.textContent = `${originLabel}3公里内 · 距离优先`;
   }
 
-  function setPool(regionKey, regionLabel, coordinates) {
+  function setPool(regionKey, regionLabel, coordinates, options = {}) {
+    const keptSelection = options.keepResult && currentSelection ? currentSelection : null;
     const districtFoods = foodData.districts[regionKey];
     const localFoods = regionKey === "citywide"
       ? foodData.citywide.foods
@@ -287,7 +372,18 @@ function initializePage() {
     });
 
     elements.poolCount.textContent = `${currentPool.length} 种可选美食`;
-    resetResult();
+
+    if (keptSelection) {
+      currentSelection = keptSelection;
+      elements.resultKicker.textContent = `${currentRegionLabel} · 随机池`;
+      elements.pickButtonText.textContent = "再抽一次";
+      elements.interactionHint.textContent = `已为你选中“${keptSelection.name}”，附近店铺已按新位置更新。`;
+      updateShopLink(keptSelection.name);
+      showNearbyMap(keptSelection.name, { scroll: false });
+    } else {
+      resetResult();
+    }
+
     updateMapLink("美食", currentCoordinates.lat, currentCoordinates.lng);
   }
 
@@ -359,7 +455,7 @@ function initializePage() {
     }
 
     setLocating(true);
-    updateLocationView("loading", "正在识别所在城区…", "请允许浏览器获取位置，识别过程只在本机完成。");
+    updateLocationView("loading", "正在识别所在城区…", "城区识别只在本机完成；附近店铺查询会提交坐标至腾讯地图。");
 
     loadBoundaries()
       .then(() => {
@@ -374,11 +470,7 @@ function initializePage() {
 
             if (!district) {
               elements.districtSelect.value = "citywide";
-              setPool("citywide", "柳州全市", currentCoordinates);
-
-              if (currentSelection) {
-                updateShopLink(currentSelection.name);
-              }
+              setPool("citywide", "柳州全市", currentCoordinates, { keepResult: true });
 
               updateLocationView(
                 "outside",
@@ -390,16 +482,12 @@ function initializePage() {
             }
 
             elements.districtSelect.value = district.name;
-            setPool(district.name, `柳州市 · ${district.name}`, currentCoordinates);
-
-            if (currentSelection) {
-              updateShopLink(currentSelection.name);
-            }
+            setPool(district.name, `柳州市 · ${district.name}`, currentCoordinates, { keepResult: true });
 
             updateLocationView(
               "success",
               `当前位置：柳州市 · ${district.name}`,
-              `定位精度约 ${Math.round(accuracy)} 米 · 仅在本机识别，不上传位置。`
+              `定位精度约 ${Math.round(accuracy)} 米 · 城区识别在本机完成，地图查询由腾讯地图提供。`
             );
             setLocating(false);
           },
@@ -458,8 +546,9 @@ function initializePage() {
     elements.foodDescription.textContent = selection.description;
     elements.resultTag.textContent = selection.tag || "柳州特色";
     updateShopLink(selection.name);
+    showNearbyMap(selection.name);
     elements.pickButtonText.textContent = "再抽一次";
-    elements.interactionHint.textContent = `已为你选中“${selection.name}”，不满意可以再抽一次。`;
+    elements.interactionHint.textContent = `已为你选中“${selection.name}”，附近店铺正在下方加载。`;
     elements.shareStatus.textContent = "";
 
     if (!hasLiveLocation && !autoLocationAttempted) {
@@ -474,6 +563,25 @@ function initializePage() {
     elements.resultContent.classList.remove("is-changing");
     void elements.resultContent.offsetWidth;
     elements.resultContent.classList.add("is-changing");
+  });
+
+  elements.nearbyMap.addEventListener("load", () => {
+    if (!elements.nearbyMapSection.hidden) {
+      elements.mapLoading.hidden = true;
+    }
+
+    if (mapLoadTimer) {
+      clearTimeout(mapLoadTimer);
+      mapLoadTimer = null;
+    }
+  });
+
+  elements.backResultButton.addEventListener("click", () => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    elements.resultContent.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "center"
+    });
   });
 
   async function copyCurrentLink() {
@@ -535,6 +643,11 @@ function initializePage() {
   autoLocateIfGranted();
 
   window.addEventListener("pagehide", () => {
+    if (mapLoadTimer) {
+      clearTimeout(mapLoadTimer);
+      mapLoadTimer = null;
+    }
+
     if (locationWatchId !== null) {
       navigator.geolocation.clearWatch(locationWatchId);
       locationWatchId = null;
@@ -550,6 +663,7 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     createFoodPicker,
     mergeFoodPools,
+    getShopSearchKeyword,
     pointInPolygon,
     findDistrictByPoint,
     wgs84ToGcj02,

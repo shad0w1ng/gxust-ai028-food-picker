@@ -41,7 +41,7 @@
         <p class="hero-description">先识别你所在的区，<br class="desktop-break">再从当地特色和常见餐食里，随机选出这一餐。</p>
         <div class="hero-note">
           <span class="note-line"></span>
-          <p>定位只在浏览器本地计算<br>不上传位置，也不需要登录</p>
+          <p>城区识别在本机完成<br>附近店铺由腾讯地图提供</p>
         </div>
       </section>
 
@@ -108,13 +108,13 @@
           <div class="result-content" id="result-content" aria-live="polite" aria-atomic="true">
             <h3 id="food-result">还没想好？</h3>
             <p id="food-description">点击下方按钮，让随机选择帮你做决定。</p>
-            <a class="result-shop-link" id="result-shop-link" href="https://mapapi.qq.com/" target="_blank" rel="noopener noreferrer" hidden>
+            <a class="result-shop-link" id="result-shop-link" href="#nearby-map-section" hidden>
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
                 <circle cx="12" cy="10" r="2.4"></circle>
               </svg>
               <span class="result-shop-copy">
-                <span id="result-shop-text">在地图寻找附近店铺</span>
+                <span id="result-shop-text">在下方查看附近店铺</span>
                 <small id="result-shop-hint">3公里内 · 距离优先</small>
               </span>
               <svg class="result-shop-arrow" viewBox="0 0 24 24" aria-hidden="true">
@@ -150,19 +150,47 @@
         <p class="share-status" id="share-status" role="status" aria-live="polite"></p>
       </section>
 
+      <section class="nearby-map-section" id="nearby-map-section" aria-labelledby="nearby-map-title" hidden>
+        <div class="nearby-map-header">
+          <div class="nearby-map-copy">
+            <p class="nearby-map-kicker">附近店铺 · 腾讯地图</p>
+            <h2 id="nearby-map-title">正在查找附近店铺</h2>
+            <p id="nearby-map-meta">当前位置 3 公里内 · 距离优先</p>
+          </div>
+          <div class="nearby-map-actions">
+            <button class="map-back-button" id="back-result-button" type="button">返回结果</button>
+            <a class="map-full-link" id="full-map-link" href="https://map.qq.com/" target="_blank" rel="noopener noreferrer">新窗口打开</a>
+          </div>
+        </div>
+        <div class="nearby-map-frame" id="nearby-map-frame">
+          <div class="map-loading" id="map-loading" role="status" aria-live="polite">
+            <span class="map-loading-dot"></span>
+            正在加载附近店铺…
+          </div>
+          <iframe
+            id="nearby-map"
+            title="腾讯地图附近店铺"
+            loading="eager"
+            allow="geolocation 'none'"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+        <p class="nearby-map-note">地图与店铺信息由腾讯地图提供；查询时会将当前位置和食物关键词提交至腾讯地图，用于返回附近结果。</p>
+      </section>
+
       <section class="options-section" aria-labelledby="options-title">
         <div class="options-header">
           <h2 id="options-title">当前区域随机池</h2>
           <span id="pool-count">36 种可选美食</span>
         </div>
         <div class="food-list" id="food-list"></div>
-        <p class="data-note">随机池包含柳州本地特色与常见餐食，非实时商家名录；抽中后点击结果卡里的找店按钮，可在当前位置 3 公里内优先搜索距离最近的店铺。</p>
+        <p class="data-note">随机池包含柳州本地特色与常见餐食，非实时商家名录；抽中后会自动在页面内加载腾讯地图，在当前位置 3 公里内按距离优先展示附近店铺。</p>
       </section>
     </main>
 
     <footer>
       <span>GXUST AI导论028</span>
-      <span>行政区边界数据：DataV.GeoAtlas · 定位仅在本机处理</span>
+      <span>行政区边界：DataV.GeoAtlas · 地图服务：腾讯地图</span>
     </footer>
   </div>
 </body>
