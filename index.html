@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f2e9">
+  <meta name="author" content="GXUST AI导论028">
+  <meta name="watermark" content="GXUST AI导论028">
+  <meta name="description" content="识别你在柳州的城区，从当地特色与常见美食中随机决定下一餐。GXUST AI导论028课程实践作品。">
+  <title>柳州今天吃什么｜GXUST AI导论028</title>
+  <link rel="dns-prefetch" href="https://mapapi.qq.com">
+  <link rel="preconnect" href="https://mapapi.qq.com">
+  <link rel="stylesheet" href="styles.css">
+  <script src="liuzhou-food-data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="page-watermark" aria-hidden="true">
+    <span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span>
+    <span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span>
+    <span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span>
+    <span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span>
+    <span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span><span>GXUST AI导论028</span>
+  </div>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="course-mark" aria-label="GXUST AI导论028">
+        <svg class="course-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M7 13.5h18c0 6.2-3.8 10.5-9 10.5S7 19.7 7 13.5Z"></path>
+          <path d="M10 9.5c1.4-1.7 1.4-3.3 0-5M16 9.5c1.4-1.7 1.4-3.3 0-5M22 9.5c1.4-1.7 1.4-3.3 0-5M11 27h10"></path>
+        </svg>
+        <span>GXUST AI导论028</span>
+      </div>
+      <span class="project-tag">柳州城市美食实验</span>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow"><span class="eyebrow-dot"></span>柳州 · 城区美食随机指南</p>
+        <h1 id="page-title">在柳州，<br><span>吃点什么？</span></h1>
+        <p class="hero-description">先识别你所在的区，<br class="desktop-break">再从当地特色和常见餐食里，随机选出这一餐。</p>
+        <div class="hero-note">
+          <span class="note-line"></span>
+          <p>定位只在浏览器本地计算<br>不上传位置，也不需要登录</p>
+        </div>
+      </section>
+
+      <section class="picker-card" aria-labelledby="picker-title">
+        <div class="card-header">
+          <h2 id="picker-title">今日觅食计划</h2>
+          <span class="availability"><span></span>全城可用</span>
+        </div>
+
+        <div class="location-panel" id="location-panel">
+          <div class="location-main">
+            <span class="location-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="2.4"></circle>
+              </svg>
+            </span>
+            <div class="location-copy">
+              <span class="location-kicker">当前位置</span>
+              <strong id="location-label">柳州市 · 待定位</strong>
+              <p id="location-detail">点击定位，自动识别你所在的区；也可以手动选择。</p>
+            </div>
+            <button class="locate-button" id="locate-button" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="3.2"></circle>
+                <path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path>
+              </svg>
+              <span>识别城区</span>
+            </button>
+          </div>
+
+          <div class="location-tools">
+            <label class="district-field" for="district-select">
+              <span>手动选择区域</span>
+              <select id="district-select">
+                <option value="citywide">柳州全市精选</option>
+                <option value="城中区">城中区</option>
+                <option value="鱼峰区">鱼峰区</option>
+                <option value="柳南区">柳南区</option>
+                <option value="柳北区">柳北区</option>
+                <option value="柳江区">柳江区</option>
+                <option value="柳城县">柳城县</option>
+                <option value="鹿寨县">鹿寨县</option>
+                <option value="融安县">融安县</option>
+                <option value="融水苗族自治县">融水苗族自治县</option>
+                <option value="三江侗族自治县">三江侗族自治县</option>
+              </select>
+            </label>
+            <a class="map-link" id="map-link" href="https://map.qq.com/" target="_blank" rel="noopener noreferrer" aria-label="在地图中查看附近美食，新窗口打开">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"></path>
+                <path d="M9 3v15M15 6v15"></path>
+              </svg>
+              地图看附近
+            </a>
+          </div>
+        </div>
+
+        <div class="result-panel">
+          <div class="result-topline">
+            <p class="result-kicker" id="result-kicker">柳州全市 · 随机池</p>
+            <span class="result-tag" id="result-tag">等待抽取</span>
+          </div>
+          <div class="result-content" id="result-content" aria-live="polite" aria-atomic="true">
+            <h3 id="food-result">还没想好？</h3>
+            <p id="food-description">点击下方按钮，让随机选择帮你做决定。</p>
+            <a class="result-shop-link" id="result-shop-link" href="https://mapapi.qq.com/" target="_blank" rel="noopener noreferrer" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="2.4"></circle>
+              </svg>
+              <span class="result-shop-copy">
+                <span id="result-shop-text">在地图寻找附近店铺</span>
+                <small id="result-shop-hint">3公里内 · 距离优先</small>
+              </span>
+              <svg class="result-shop-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 17 17 7M8 7h9v9"></path>
+              </svg>
+            </a>
+          </div>
+          <svg class="result-decoration" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="52"></circle>
+            <circle cx="60" cy="60" r="36"></circle>
+            <path d="M28 60h64M60 28v64"></path>
+          </svg>
+        </div>
+
+        <div class="actions">
+          <button class="primary-button" id="pick-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path>
+            </svg>
+            <span id="pick-button-text">帮我决定</span>
+          </button>
+          <button class="secondary-button" id="share-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"></path>
+            </svg>
+            分享小工具
+          </button>
+        </div>
+        <p class="interaction-hint" id="interaction-hint">正在准备柳州全市随机池。</p>
+        <p class="share-status" id="share-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="options-section" aria-labelledby="options-title">
+        <div class="options-header">
+          <h2 id="options-title">当前区域随机池</h2>
+          <span id="pool-count">36 种可选美食</span>
+        </div>
+        <div class="food-list" id="food-list"></div>
+        <p class="data-note">随机池包含柳州本地特色与常见餐食，非实时商家名录；抽中后点击结果卡里的找店按钮，可在当前位置 3 公里内优先搜索距离最近的店铺。</p>
+      </section>
+    </main>
+
+    <footer>
+      <span>GXUST AI导论028</span>
+      <span>行政区边界数据：DataV.GeoAtlas · 定位仅在本机处理</span>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,5 @@
+.workbuddy/
+.wbapp_*.genie
+.DS_Store
+Thumbs.db
+preview-*.png
